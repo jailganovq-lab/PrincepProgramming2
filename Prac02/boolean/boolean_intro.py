@@ -1,36 +1,23 @@
-# 1
-is_student = True
-is_working = False
+# 1. Boolean типін тексеру
+is_active = True
+print(type(is_active))  # <class 'bool'>
+# 2. Boolean мәнін input арқылы алу
+answer = input("Are you ready? (yes/no): ")
+is_ready = answer == "yes"
 
-print(is_student)
-print(is_working)
+print(is_ready)
+# 3. Сан нөлге тең бе — Boolean нәтиже
+number = 0
+is_zero = number == 0
 
-# 2
-has_ticket = True
+print(is_zero)  # True
+# 4. Boolean айнымалыны қайта тағайындау
+logged_in = False
+print(logged_in)
 
-if has_ticket:
-    print("You can enter")
-else:
-    print("You cannot enter")
+logged_in = True
+print(logged_in)
+# 5. Boolean мәнін print ішінде қолдану
+has_money = True
 
-
-# 3
-a = 10
-b = 5
-
-result = a > b
-print(result)  # True
-
-# 4
-x = 7
-y = 7
-
-print(x == y)   # True
-print(x != y)   # False
-
-# 5
-is_on = False
-print(is_on)
-
-is_on = True
-print(is_on)
+print("Has money:", has_money)
