@@ -24,3 +24,4 @@ while i < len(numbers):
         continue
     print(numbers[i])
     i += 1
+    
