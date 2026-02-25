@@ -11,17 +11,17 @@ print(d1.bark())
 class Student:
     school_name = "Python Academy"
 
-    def __init__(self, name):
+    def __init__(self, name): # init Бұл — әр объектке жеке берілетін айнымалы.
         self.name = name
 
     @classmethod
-    def get_school_name(cls):
+    def get_school_name(cls): # Class method - cls - Классқа ортақ мәліметпен жұмыс істейді- cls классқа сілтеме.
         return cls.school_name
 
 print(Student.get_school_name())
 
 class MathUtils:
-    @staticmethod
+    @staticmethod # Бірақ классқа да, объектке де тәуелді емес
     def add(a, b):
         return a + b
 

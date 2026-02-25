@@ -1,11 +1,11 @@
-def multiply_all(*numbers):
+def multiply_all(*numbers):  #*numbers — бұл көп аргумент қабылдау дегенді білдіреді.
     result = 1
     for num in numbers:
         result *= num
     return result
 
 print(multiply_all(2, 3, 4))  # 24
-def print_student_info(**info):
+def print_student_info(**info): # **info — бұл шексіз keyword аргументтерді қабылдау.
     for key, value in info.items():
         print(f"{key}: {value}")
 
@@ -21,3 +21,5 @@ def show_data(*args, **kwargs):
         print(f"{key} = {value}")
 
 show_data(10, 20, 30, name="Дана", course="Python")
+#*args   → tuple  (позициялық)
+#**kwargs → dict  (атаулы)

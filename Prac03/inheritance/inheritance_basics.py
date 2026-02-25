@@ -3,7 +3,7 @@ class Animal:
         print("Жануар дыбыс шығарады")
 
 class Dog(Animal):
-    pass
+    pass #pass → ештеңе қоспаймыз деген сөз.
 
 d = Dog()
 d.speak()
@@ -28,7 +28,7 @@ class Person:
 
 class Student(Person):
     def __init__(self, name, grade):
-        super().__init__(name)
+        super().__init__(name) #класстың методын шақыру.
         self.grade = grade
 
     def info(self):
