@@ -4,11 +4,12 @@ from connect import get_connection
 def create_table():
     conn = get_connection()
     cur = conn.cursor()
+    # Мұнда кесте атын 'contacts' деп өзгерттік, ал бағандарын сіздің pgAdmin-дегідей қылдық
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS phonebook (
+        CREATE TABLE IF NOT EXISTS contacts (
             id SERIAL PRIMARY KEY,
-            first_name VARCHAR(100) NOT NULL,
-            phone VARCHAR(20) NOT NULL UNIQUE
+            username VARCHAR(100) NOT NULL,
+            phone_number VARCHAR(20) NOT NULL UNIQUE
         );
     """)
     conn.commit()
@@ -23,10 +24,12 @@ def insert_from_csv(filename):
         for row in reader:
             cur.execute(
                 """
-                INSERT INTO phonebook (first_name, phone)
+                INSERT INTO contacts (username, phone_number)
                 VALUES (%s, %s)
-                ON CONFLICT (phone) DO NOTHING
+                ON CONFLICT (phone_number) DO NOTHING
                 """,
+                # Мұнда CSV файлында 'first_name' және 'phone' деп жазылғанын ескердік. 
+                # Егер қате шықса, CSV файлының бірінші жолын тексеру керек.
                 (row["first_name"], row["phone"])
             )
     conn.commit()
@@ -40,7 +43,7 @@ def insert_from_console():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO phonebook (first_name, phone) VALUES (%s, %s)",
+        "INSERT INTO contacts (username, phone_number) VALUES (%s, %s)",
         (name, phone)
     )
     conn.commit()
@@ -57,12 +60,12 @@ def update_contact():
 
     if field == "name":
         cur.execute(
-            "UPDATE phonebook SET first_name = %s WHERE first_name = %s OR phone = %s",
+            "UPDATE contacts SET username = %s WHERE username = %s OR phone_number = %s",
             (new_value, value, value)
         )
     elif field == "phone":
         cur.execute(
-            "UPDATE phonebook SET phone = %s WHERE first_name = %s OR phone = %s",
+            "UPDATE contacts SET phone_number = %s WHERE username = %s OR phone_number = %s",
             (new_value, value, value)
         )
     else:
@@ -79,7 +82,7 @@ def update_contact():
 def query_all():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM phonebook ORDER BY id")
+    cur.execute("SELECT * FROM contacts ORDER BY id")
     rows = cur.fetchall()
     if rows:
         for row in rows:
@@ -94,7 +97,7 @@ def query_by_name():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "SELECT * FROM phonebook WHERE first_name ILIKE %s ORDER BY id",
+        "SELECT * FROM contacts WHERE username ILIKE %s ORDER BY id",
         (f"%{name}%",)
     )
     rows = cur.fetchall()
@@ -111,7 +114,7 @@ def query_by_phone_prefix():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "SELECT * FROM phonebook WHERE phone LIKE %s ORDER BY id",
+        "SELECT * FROM contacts WHERE phone_number LIKE %s ORDER BY id",
         (f"{prefix}%",)
     )
     rows = cur.fetchall()
@@ -128,7 +131,7 @@ def delete_contact():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "DELETE FROM phonebook WHERE first_name = %s OR phone = %s",
+        "DELETE FROM contacts WHERE username = %s OR phone_number = %s",
         (value, value)
     )
     conn.commit()
