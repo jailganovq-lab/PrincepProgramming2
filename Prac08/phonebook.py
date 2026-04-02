@@ -8,17 +8,19 @@ def insert_from_csv(filename):
     names = []
     phones = []
     
-    with open(filename, "r", newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            names.append(row["first_name"].strip())
-            phones.append(row["phone"].strip())
-            
-    # Тапсырма 3: Процедура арқылы жаппай қосу (Мәліметтерді массив түрінде береміз)
     try:
+        with open(filename, "r", newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                names.append(row["first_name"].strip())
+                phones.append(row["phone"].strip())
+                
+        # Тапсырма 3: Процедура арқылы жаппай қосу (Мәліметтерді массив түрінде береміз)
         cur.execute("CALL insert_bulk_contacts(%s, %s)", (names, phones))
         conn.commit()
         print("Bulk insert completed using procedure.")
+    except FileNotFoundError:
+        print(f"Error: The file '{filename}' was not found.")
     except Exception as e:
         print(f"Error during bulk insert: {e}")
         conn.rollback()
@@ -27,18 +29,30 @@ def insert_from_csv(filename):
     conn.close()
 
 def insert_from_console():
-    name = input("Enter name: ")
-    phone = input("Enter phone: ")
     conn = get_connection()
     cur = conn.cursor()
     
-    # Тапсырма 2: Upsert процедурасын шақыру
-    cur.execute("CALL upsert_contact(%s, %s)", (name, phone))
-    conn.commit()
+    print("\n--- Енгізуді тоқтату үшін атына ештеңе жазбай Enter басыңыз ---")
     
+    while True:
+        name = input("Enter name: ").strip()
+        if not name:  # Егер есім жазылмай бос қалса, цикл тоқтайды
+            break
+            
+        phone = input("Enter phone: ").strip()
+        
+        try:
+            # Тапсырма 2: Upsert процедурасын шақыру
+            cur.execute("CALL upsert_contact(%s, %s)", (name, phone))
+            conn.commit()
+            print(f"Contact '{name}' inserted or updated via procedure.")
+        except Exception as e:
+            print(f"Error during insert: {e}")
+            conn.rollback()
+            
     cur.close()
     conn.close()
-    print("Contact inserted or updated via procedure.")
+    print("Console input completed.")
 
 def query_by_pattern():
     pattern = input("Enter search pattern (name or phone part): ")
@@ -50,6 +64,7 @@ def query_by_pattern():
     rows = cur.fetchall()
     
     if rows:
+        print("\n--- Found Contacts ---")
         for row in rows:
             print(row)
     else:
@@ -74,6 +89,7 @@ def query_with_pagination():
     rows = cur.fetchall()
     
     if rows:
+        print("\n--- Paginated Results ---")
         for row in rows:
             print(row)
     else:
