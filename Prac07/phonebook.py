@@ -4,14 +4,31 @@ from connect import get_connection
 def create_table():
     conn = get_connection()
     cur = conn.cursor()
-    # Мұнда кесте атын 'contacts' деп өзгерттік, ал бағандарын сіздің pgAdmin-дегідей қылдық
+    
+    # Кестені құру
     cur.execute("""
         CREATE TABLE IF NOT EXISTS contacts (
             id SERIAL PRIMARY KEY,
             username VARCHAR(100) NOT NULL,
-            phone_number VARCHAR(20) NOT NULL UNIQUE
+            phone_number VARCHAR(20) NOT NULL
         );
     """)
+    
+    # Кестеде UNIQUE шектеуі бар-жоғын тексеру және жоқ болса қосу
+    try:
+        cur.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint WHERE conname = 'contacts_phone_number_key'
+                ) THEN
+                    ALTER TABLE contacts ADD CONSTRAINT contacts_phone_number_key UNIQUE (phone_number);
+                END IF;
+            END $$;
+        """)
+    except Exception as e:
+        print(f"Ескерту (Constraint): {e}")
+        
     conn.commit()
     cur.close()
     conn.close()
@@ -19,37 +36,57 @@ def create_table():
 def insert_from_csv(filename):
     conn = get_connection()
     cur = conn.cursor()
-    with open(filename, "r", newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            cur.execute(
-                """
-                INSERT INTO contacts (username, phone_number)
-                VALUES (%s, %s)
-                ON CONFLICT (phone_number) DO NOTHING
-                """,
-                # Мұнда CSV файлында 'first_name' және 'phone' деп жазылғанын ескердік. 
-                # Егер қате шықса, CSV файлының бірінші жолын тексеру керек.
-                (row["first_name"], row["phone"])
-            )
-    conn.commit()
+    try:
+        with open(filename, "r", newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # UNIQUE шектеуі істеп тұрғандықтан, ON CONFLICT қате бермейді
+                cur.execute(
+                    """
+                    INSERT INTO contacts (username, phone_number)
+                    VALUES (%s, %s)
+                    ON CONFLICT (phone_number) DO NOTHING
+                    """,
+                    (row["first_name"].strip(), row["phone"].strip())
+                )
+        conn.commit()
+        print("Contacts inserted from CSV.")
+    except FileNotFoundError:
+        print(f"Error: The file '{filename}' was not found.")
+    except Exception as e:
+        print(f"Error during CSV insert: {e}")
+        conn.rollback()
+        
     cur.close()
     conn.close()
-    print("Contacts inserted from CSV.")
 
 def insert_from_console():
-    name = input("Enter name: ")
-    phone = input("Enter phone: ")
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO contacts (username, phone_number) VALUES (%s, %s)",
-        (name, phone)
-    )
-    conn.commit()
+    
+    print("\n--- Енгізуді тоқтату үшін атына ештеңе жазбай Enter басыңыз ---")
+    
+    while True:
+        name = input("Enter name: ").strip()
+        if not name:  # Ат бос қалса цикл тоқтайды
+            break
+            
+        phone = input("Enter phone: ").strip()
+        
+        try:
+            cur.execute(
+                "INSERT INTO contacts (username, phone_number) VALUES (%s, %s)",
+                (name, phone)
+            )
+            conn.commit()
+            print(f"Contact '{name}' inserted.")
+        except Exception as e:
+            print(f"Error inserting contact: {e}")
+            conn.rollback()
+            
     cur.close()
     conn.close()
-    print("Contact inserted.")
+    print("Console input completed.")
 
 def update_contact():
     value = input("Enter existing name or phone of contact to update: ")
@@ -85,6 +122,7 @@ def query_all():
     cur.execute("SELECT * FROM contacts ORDER BY id")
     rows = cur.fetchall()
     if rows:
+        print("\n--- All Contacts ---")
         for row in rows:
             print(row)
     else:
@@ -102,6 +140,7 @@ def query_by_name():
     )
     rows = cur.fetchall()
     if rows:
+        print("\n--- Found Contacts ---")
         for row in rows:
             print(row)
     else:
@@ -119,6 +158,7 @@ def query_by_phone_prefix():
     )
     rows = cur.fetchall()
     if rows:
+        print("\n--- Found Contacts ---")
         for row in rows:
             print(row)
     else:
@@ -142,7 +182,7 @@ def delete_contact():
 def menu():
     create_table()
     while True:
-        print("\n--- PhoneBook Menu ---")
+        print("\n--- PhoneBook Menu (Practice 7) ---")
         print("1. Insert data from CSV")
         print("2. Insert data from console")
         print("3. Update contact name or phone")
