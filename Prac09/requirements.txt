@@ -1,0 +1,2 @@
+# Create requirements.txt
+echo "pygame>=2.0.0" > requirements.txt
