@@ -37,5 +37,18 @@
                 "type": "work"
             }
         ]
+    },
+    {
+        "name": "qanat",
+        "surname": "jailganov",
+        "email": "jailganovq@gmail.com",
+        "birthday": "2008-01-11",
+        "group": "work",
+        "phones": [
+            {
+                "phone": "87057648657",
+                "type": "work"
+            }
+        ]
     }
 ]
